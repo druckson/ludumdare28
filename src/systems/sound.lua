@@ -7,6 +7,14 @@ local Sound = Class{
     end
 }
 
+function Sound:setup(engine)
+    local this = self
+    self.engine = engine
+    engine.messaging:register("next-song", function()
+        this:nextSong()
+    end)
+end
+
 function Sound:addSong(file)
     table.insert(self.songs, love.audio.newSource('assets/audio/'..file))
 end
