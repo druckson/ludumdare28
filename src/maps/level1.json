@@ -1,14 +1,81 @@
 {
+    "prefabs": [
+        
+    ],
     "entities": [
         {
-            "position": [0, 0],
+            "transform": {
+                "position": [0, 0],
+                "rotation": 0
+            },
             "graphics": {
                 "width": 32,
                 "height": 32,
                 "image": "player1.png"
-            }
+            },
+            "networking": {
+                "type": "dynamic"
+            },
             "physics": {
-                "mass": 1
+                "type": "dynamic",
+                "density": 1
+                "shapes": [
+                    {
+                        "type": "rect",
+                        "width": 10,
+                        "height": 10 
+                    }
+                ]
+            }
+        },
+        {
+            "transform": {
+                "position": [20, 0],
+                "rotation": 0
+            },
+            "graphics": {
+                "width": 32,
+                "height": 32,
+                "image": "player2.png"
+            },
+            "networking": {
+                "type": "dynamic"
+            },
+            "physics": {
+                "type": "dynamic",
+                "density": 1,
+                "shapes": [
+                    {
+                        "type": "rect",
+                        "width": 10,
+                        "height": 10 
+                    }
+                ]
+            }
+        },
+        {
+            "transform": {
+                "position": [0, 30],
+                "rotation": 0
+            },
+            "graphics": {
+                "width": 32,
+                "height": 32,
+                "image": "player2.png"
+            },
+            "networking": {
+                "type": "static"
+            },
+            "physics": {
+                "type": "static",
+                "density": 0,
+                "shapes": [
+                    {
+                        "type": "rect",
+                        "width": 1000,
+                        "height": 0.1
+                    }
+                ]
             }
         }
     ]
