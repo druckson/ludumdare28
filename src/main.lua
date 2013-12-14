@@ -2,29 +2,35 @@ local Engine = require "engine"
 local MapLoader = require "maploader"
 local Graphics = require "systems/graphics"
 local Physics = require "systems/physics"
-local Network = require "systems/network"
+local ClientNetworking = require "systems/client-networking"
+local ServerNetworking = require "systems/server-networking"
 local Sound = require "systems/sound"
 
 local engine = Engine()
-
-local graphics = Graphics()
-local network = Network()
-local physics = Physics()
-local sound = Sound()
-
 local mapLoader = MapLoader(engine)
-function love.load()
-    sound:addSong('songs/aztek.mp3')
-    sound:addSong('songs/credit.mp3')
-    sound:addSong('songs/spastiche.mp3')
-    --sound:play()
 
-    engine:addSystem("graphics", graphics)
-    engine:addSystem("network", network)
+function love.load(args)
+    local physics = Physics()
     engine:addSystem("physics", physics)
-    engine:addSystem("sound", sound)
 
-    mapLoader:loadMap("level1")
+    if args[2] == nil then
+        local clientNetworking = ClientNetworking("localhost")
+        local graphics = Graphics()
+        local sound = Sound()
+
+        sound:addSong('songs/aztek.mp3')
+        sound:addSong('songs/credit.mp3')
+        sound:addSong('songs/spastiche.mp3')
+        sound:play()
+
+        engine:addSystem("networking", clientNetworking)
+        engine:addSystem("graphics", graphics)
+        engine:addSystem("sound", sound)
+    else
+        local serverNetworking = ServerNetworking()
+        engine:addSystem("networking", serverNetworking)
+        mapLoader:loadMap("level1")
+    end
 end
 
 function love.keypressed(key, repeating)
