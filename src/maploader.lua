@@ -14,7 +14,6 @@ function MapLoader:loadMap(file)
 
     if map.entities then
         for _, data in pairs(map.entities) do
-            print("Creating entity: ")
             PrettyPrint(data)
             self.engine:createEntity(data)
         end
