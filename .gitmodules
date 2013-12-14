@@ -1,0 +1,3 @@
+[submodule "src/lib/msgpack"]
+	path = src/lib/msgpack
+	url = https://github.com/kengonakajima/lua-msgpack.git
