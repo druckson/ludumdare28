@@ -1,3 +1,6 @@
 [submodule "src/lib/msgpack"]
 	path = src/lib/msgpack
 	url = https://github.com/kengonakajima/lua-msgpack.git
+[submodule "src/lib/hump"]
+	path = src/lib/hump
+	url = https://github.com/vrld/hump.git
