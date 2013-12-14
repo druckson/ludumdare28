@@ -1,17 +1,59 @@
 local Class = require "lib/hump/class"
 local vector = require "lib/hump/vector"
+local Messaging = require "utils/messaging"
+require "lib/json"
+
+function merge(data1, data2)
+    local out = {}
+
+    for key, value in pairs(data1) do
+        if data2[key] ~= nil and type(value) == "table" then
+            out[key] = merge(data1[key], data2[key])
+        else
+            out[key] = value
+        end
+    end
+
+    for key, value in pairs(data2) do
+        if data1[key] == nil then
+            out[key] = value
+        end
+    end
+
+    return out
+end
 
 local Engine = Class{
     init = function(self)
         self.systems = {}
+        self.systemsByName = {}
         self.entities = {}
         self.nextEntity = 1
+        self.messaging = Messaging()
+        self.prefabs = {}
     end
 }
 
+function Engine:prefab(data)
+    local out = {}
+    if data.prefab and self.prefabs[data.prefab] then
+        local prefab = data.prefab
+        data.prefab = nil
+        out = self:prefab(self.prefabs[prefab])
+    end
+
+    return merge(out, data)
+end
+
+function Engine:addPrefabs(prefabs)
+    for name, value in pairs(prefabs) do
+        self.prefabs[name] = value
+    end
+end
+
 function Engine:addSystem(name, system)
     table.insert(self.systems, system)
-    self[name] = system
+    self.systemsByName[name] = system
 
     if system.setup ~= nil then
         system:setup(self)
@@ -54,9 +96,10 @@ function Engine:unmarshall(entity, data)
         }
     end
 
-    for name, system in pairs(data) do
-        if self[name] ~= nil and self[name].addEntity ~= nil then
-            self[name]:addEntity(entity, entityData, system)
+    for name, systemData in pairs(data) do
+        local system = self.systemsByName[name]
+        if system ~= nil and system.addEntity ~= nil then
+            system:addEntity(entity, entityData, systemData)
         end
     end
 end
@@ -65,11 +108,12 @@ function Engine:createEntity(data)
     local entity = self.nextEntity
     self.nextEntity = self.nextEntity + 1
 
+    data = self.prefab(self, data)
+
     local entityData = {}
+    entityData.archive = data
     self.entities[entity] = entityData
     self:unmarshall(entity, data)
-
-    entityData.archive = data
 end
 
 function Engine:removeEntity(entity)
@@ -79,6 +123,7 @@ function Engine:removeEntity(entity)
 end
 
 function Engine:update(dt)
+    self.messaging:flush()
     for _, system in pairs(self.systems) do
         if system.update ~= nil then
             system:update(dt)

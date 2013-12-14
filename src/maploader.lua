@@ -12,9 +12,12 @@ function MapLoader:loadMap(file)
     local data = love.filesystem.read('maps/'..file..'.json')
     local map = json.decode(data)
 
+    if map.prefabs then
+        self.engine:addPrefabs(map.prefabs)
+    end
+
     if map.entities then
         for _, data in pairs(map.entities) do
-            PrettyPrint(data)
             self.engine:createEntity(data)
         end
     end

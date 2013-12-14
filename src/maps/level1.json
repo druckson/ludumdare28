@@ -1,13 +1,6 @@
 {
-    "prefabs": [
-        
-    ],
-    "entities": [
-        {
-            "transform": {
-                "position": [0, 0],
-                "rotation": 0
-            },
+    "prefabs": {
+        "player1": {
             "graphics": {
                 "width": 32,
                 "height": 32,
@@ -28,22 +21,18 @@
                 ]
             }
         },
-        {
-            "transform": {
-                "position": [20, 0],
-                "rotation": 0
-            },
+        "player2": {
             "graphics": {
                 "width": 32,
                 "height": 32,
-                "image": "player2.png"
+                "image": "player1.png"
             },
             "networking": {
                 "type": "dynamic"
             },
             "physics": {
                 "type": "dynamic",
-                "density": 1,
+                "density": 1
                 "shapes": [
                     {
                         "type": "rect",
@@ -52,16 +41,28 @@
                     }
                 ]
             }
+        }
+    },
+    "entities": [
+        {
+            "prefab": "player1",
+            "transform": {
+                "position": [0, 0],
+                "rotation": 0
+            }
         },
         {
+            "prefab": "player2",
+            "transform": {
+                "position": [20, 0],
+                "rotation": 0
+            }
+        },
+        {
+            "prefab": "player1",
             "transform": {
                 "position": [0, 30],
-                "rotation": 0
-            },
-            "graphics": {
-                "width": 32,
-                "height": 32,
-                "image": "player2.png"
+                "rotation": 1
             },
             "networking": {
                 "type": "static"
