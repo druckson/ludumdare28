@@ -7,3 +7,6 @@
 [submodule "src/lib/lua-pretty-print"]
 	path = src/lib/lua-pretty-print
 	url = https://github.com/Anaminus/lua-pretty-print.git
+[submodule "hump"]
+	path = src/lib/hump
+	url = git@github.com:druckson/hump.git
