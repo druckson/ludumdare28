@@ -26,7 +26,7 @@ function Engine:createEntity(data)
     end
 
     for name, system in pairs(data) do
-        if self[name] ~= nil then
+        if self[name] ~= nil and self[name].addEntity ~= nil then
             self[name]:addEntity(entity, entityData, system)
         end
     end
