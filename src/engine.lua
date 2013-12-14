@@ -1,4 +1,5 @@
 local Class = require "lib/hump/class"
+local vector = require "lib/hump/vector"
 
 local Engine = Class{
     init = function(self)
@@ -18,6 +19,12 @@ function Engine:createEntity(data)
     self.nextEntity = self.nextEntity + 1
 
     local entityData = {}
+    if data.position then
+        entityData.position = vector.new(unpack(data.position))
+    else
+        entityData.position = vector.new(0, 0)
+    end
+
     for name, system in pairs(data) do
         if self[name] ~= nil then
             self[name]:addEntity(entity, entityData, system)
