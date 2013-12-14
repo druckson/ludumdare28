@@ -15,6 +15,7 @@ function Graphics:addEntity(entity, entityData, data)
         height = data.height,
         image = love.graphics.newImage("assets/images/"..data.image)
     }
+    entityData.graphics.image:setFilter("nearest", "nearest", 0)
 end
 
 function Graphics:removeEntity(entity)
@@ -22,10 +23,12 @@ function Graphics:removeEntity(entity)
 end
 
 function Graphics:draw()
-    --love.graphics.clear()
+    love.graphics.push()
+    love.graphics.scale(5)
     for _, entity in pairs(self.entities) do
-        love.graphics.draw(entity.graphics.image, 0, 0)
+        love.graphics.draw(entity.graphics.image, entity.position:unpack())
     end
+    love.graphics.pop()
 end
 
 return Graphics
