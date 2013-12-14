@@ -5,6 +5,7 @@ local Physics = require "systems/physics"
 local ClientNetworking = require "systems/client-networking"
 local ServerNetworking = require "systems/server-networking"
 local Sound = require "systems/sound"
+local Input = require "systems/input"
 
 local engine = Engine()
 local mapLoader = MapLoader(engine)
@@ -38,7 +39,7 @@ function love.keypressed(key, repeating)
         love.event.quit()
     end
     if key == 'a' then
-        sound:nextSong()
+        engine.messaging:emit("next-song")
     end
 end
 
