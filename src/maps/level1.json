@@ -1,10 +1,14 @@
 {
     "entities": [
         {
+            "position": [0, 0],
             "graphics": {
                 "width": 32,
                 "height": 32,
                 "image": "player1.png"
+            }
+            "physics": {
+                "mass": 1
             }
         }
     ]
