@@ -4,9 +4,17 @@ require "lib/frames"
 local Graphics = Class{
     init = function(self)
         self.entities = {}
+        self.message = ''
         love.graphics.setFont(love.graphics.newFont("assets/fonts/electrolize.ttf", 20))
     end
 }
+
+function Graphics:setup(engine)
+    local this = self
+    engine.messaging:register("type-buffer", function(string)
+        this.message = string
+    end)
+end
 
 function Graphics:setPlayer(entity, player)
     self.player = player
@@ -80,6 +88,7 @@ function Graphics:draw()
 
     love.graphics.setColor(0, 0, 0)
     love.graphics.print("FPS: "..love.timer.getFPS(), 10, 10)
+    love.graphics.print(self.message, 10, 20)
     loveframes.draw()
 end
 

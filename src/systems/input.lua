@@ -9,7 +9,8 @@ local Input = Class{
     init = function(self)
         self.currentSong = 3
         self.speed = 20
-        self.state = STATE_GAMEPLAY
+        self.state = STATE_TYPING
+        self.typeBuffer = ''
     end
 }
 
@@ -22,16 +23,31 @@ function Input:setPlayer(entity, player)
 end
 
 function Input:keypressed(key, repeating)
-    if self.state == STATE_GAMEPLAY then
+    if self.state == STATE_TYPING then
+        if key == 'return' then
+
+            if string.sub(self.typeBuffer, 0, 7) == "connect" then
+                local address = string.sub(self.typeBuffer, 9)
+                print(address)
+                self.engine.messaging:emit("connect", address)
+                self.state = STATE_GAMEPLAY
+            end
+
+            self.typeBuffer = ''
+        elseif key == 'backspace' then
+            self.typeBuffer = string.sub(self.typeBuffer, 0, string.len(self.typeBuffer)-1)
+        else
+            self.typeBuffer = self.typeBuffer..key
+        end
+        self.engine.messaging:emit("type-buffer", self.typeBuffer)
+    elseif self.state == STATE_GAMEPLAY then
         if key == 'q' then
             love.event.quit()
         elseif key == 'n' then
             self.engine.messaging:emit("next-song")
         elseif key == 'return' then
-            self.engine.messaging:emit("connect", "localhost")
+            
         end
-    else
-        
     end
     loveframes.keypressed(key, repeating)
 end
