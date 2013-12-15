@@ -1,9 +1,15 @@
 {
+    "audio": {
+        "songs": [
+            "songs/credit.mp3"
+        ],
+        "effects": {}
+    },
     "prefabs": {
         "player1": {
             "graphics": {
-                "width": 32,
-                "height": 32,
+                "width": 1,
+                "height": 1,
                 "image": "player1.png"
             },
             "networking": {
@@ -15,17 +21,17 @@
                 "shapes": [
                     {
                         "type": "rect",
-                        "width": 10,
-                        "height": 10 
+                        "width": 1,
+                        "height": 1 
                     }
                 ]
             }
         },
         "player2": {
             "graphics": {
-                "width": 32,
-                "height": 32,
-                "image": "player1.png"
+                "width": 1,
+                "height": 1,
+                "image": "test.png"
             },
             "networking": {
                 "type": "dynamic"
@@ -36,8 +42,8 @@
                 "shapes": [
                     {
                         "type": "rect",
-                        "width": 10,
-                        "height": 10 
+                        "width": 1,
+                        "height": 1 
                     }
                 ]
             }
@@ -54,15 +60,15 @@
         {
             "prefab": "player2",
             "transform": {
-                "position": [20, 0],
+                "position": [5, 0],
                 "rotation": 0
             }
         },
         {
             "prefab": "player1",
             "transform": {
-                "position": [0, 30],
-                "rotation": 1
+                "position": [0, 5],
+                "rotation": 0
             },
             "networking": {
                 "type": "static"

@@ -21,6 +21,20 @@ function MapLoader:loadMap(file)
             self.engine:createEntity(data)
         end
     end
+
+    if map.audio then
+        for _, song in pairs(map.audio.songs) do
+            self.engine:createEntity({
+                sound = {
+                    file = song
+                },
+                networking = {
+                    type = "static"
+                }
+            })
+        end
+        --self.engine.systemsByName.sound:addSong
+    end
 end
 
 return MapLoader
