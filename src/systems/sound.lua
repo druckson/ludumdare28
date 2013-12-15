@@ -1,9 +1,10 @@
 local Class = require "../lib/hump/class"
+require "lib/json"
 
 local Sound = Class{
     init = function(self)
         self.songs = {}
-        self.currentSong = 3
+        self.currentSong = 1
     end
 }
 
@@ -13,6 +14,11 @@ function Sound:setup(engine)
     engine.messaging:register("next-song", function()
         this:nextSong()
     end)
+end
+
+function Sound:addEntity(entity, entityData, data)
+    table.insert(self.songs, love.audio.newSource('assets/audio/'..data.file))
+    self:play()
 end
 
 function Sound:addSong(file)
@@ -33,6 +39,7 @@ function Sound:stop()
 end
 
 function Sound:play()
+    print(self.currentSong)
     self.songs[self.currentSong]:play()
 end
 
