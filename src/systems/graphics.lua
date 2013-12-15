@@ -1,11 +1,16 @@
-local Class = require "../lib/hump/class"
+local Class = require "lib/hump/class"
+require "lib/frames"
 
 local Graphics = Class{
     init = function(self)
         self.entities = {}
-        love.graphics.setBackgroundColor(100, 100, 100)
+        love.graphics.setFont(love.graphics.newFont("assets/fonts/electrolize.ttf", 20))
     end
 }
+
+function Graphics:setPlayer(entity, player)
+    self.player = player
+end
 
 function Graphics:marshall(entity, data)
     local entityData = self.entities[entity];
@@ -37,13 +42,45 @@ function Graphics:removeEntity(entity)
     self.entities[entity] = nil
 end
 
+function Graphics:update(dt)
+    loveframes.update(dt)
+end
+
 function Graphics:draw()
+    love.graphics.reset()
+    love.graphics.setBackgroundColor(100, 100, 100)
+
     love.graphics.push()
-    love.graphics.scale(5)
+    love.graphics.translate(love.graphics.getWidth()/2,
+                            love.graphics.getHeight()/2)
+    love.graphics.scale(30, 30)
+    if self.player then
+        love.graphics.translate(
+            -self.player.transform.position.x,
+            -self.player.transform.position.y)
+    end
     for _, entity in pairs(self.entities) do
-        love.graphics.draw(entity.graphics.image, entity.transform.position:unpack())
+        love.graphics.push()
+        love.graphics.translate(entity.transform.position:unpack())
+        love.graphics.rotate(entity.transform.rotation)
+        --love.graphics.rectangle("fill", 
+        --    -entity.graphics.width/2,
+        --    -entity.graphics.height/2,
+        --    entity.graphics.width,
+        --    entity.graphics.height)
+        love.graphics.draw(entity.graphics.image, 
+            -entity.graphics.width/2,
+            -entity.graphics.height/2,
+            0,
+            1/32,
+            1/32)
+        love.graphics.pop()
     end
     love.graphics.pop()
+
+    love.graphics.setColor(0, 0, 0)
+    love.graphics.print("FPS: "..love.timer.getFPS(), 10, 10)
+    loveframes.draw()
 end
 
 return Graphics
