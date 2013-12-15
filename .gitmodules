@@ -10,3 +10,6 @@
 [submodule "hump"]
 	path = src/lib/hump
 	url = git@github.com:druckson/hump.git
+[submodule "src/lib/frames"]
+	path = src/lib/frames
+	url = https://github.com/NikolaiResokav/LoveFrames.git
