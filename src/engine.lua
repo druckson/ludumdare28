@@ -1,35 +1,17 @@
 local Class = require "lib/hump/class"
 local vector = require "lib/hump/vector"
 local Messaging = require "utils/messaging"
+local merge = (require "utils/diff").merge
 require "lib/json"
 
-function merge(data1, data2)
-    local out = {}
-
-    for key, value in pairs(data1) do
-        if data2[key] ~= nil and type(value) == "table" then
-            out[key] = merge(data1[key], data2[key])
-        else
-            out[key] = value
-        end
-    end
-
-    for key, value in pairs(data2) do
-        if data1[key] == nil then
-            out[key] = value
-        end
-    end
-
-    return out
-end
-
 local Engine = Class{
-    init = function(self)
+    init = function(self, messaging)
         self.systems = {}
+        self.systemData = {}
         self.systemsByName = {}
         self.entities = {}
         self.nextEntity = 1
-        self.messaging = Messaging()
+        self.messaging = messaging
         self.prefabs = {}
     end
 }
@@ -51,12 +33,30 @@ function Engine:addPrefabs(prefabs)
     end
 end
 
-function Engine:addSystem(name, system)
+function Engine:addSystem(name, system, updateInterval)
     table.insert(self.systems, system)
     self.systemsByName[name] = system
+    system._name = name
+
+    self.systemData[name] = {
+        age = 0 
+    }
+    if updateInterval then
+        self.systemData[name].updateInterval = updateInterval
+    else
+        self.systemData[name].updateInterval = 1
+    end
 
     if system.setup ~= nil then
         system:setup(self)
+    end
+end
+
+function Engine:setPlayer(entity)
+    for _, system in pairs(self.systems) do
+        if system.setPlayer then
+            system:setPlayer(entity, self.entities[entity])
+        end
     end
 end
 
@@ -65,10 +65,12 @@ function Engine:marshall(entity)
 
     local data = entityData.archive;
 
-    data.transform = {
-        position = {entityData.transform.position:unpack()},
-        rotation = entityData.transform.rotation
-    }
+    if entityData.transform then
+        data.transform = {
+            position = {entityData.transform.position:unpack()},
+            rotation = entityData.transform.rotation
+        }
+    end
 
     for _, system in pairs(self.systems) do
         if system.marshall ~= nil then
@@ -88,11 +90,6 @@ function Engine:unmarshall(entity, data)
         entityData.transform = {
             position = vector.new(unpack(data.transform.position)),
             rotation = data.transform.rotation
-        }
-    else
-        entityData.position = {
-            position = vector.new(0, 0),
-            rotation = 0
         }
     end
 
@@ -114,6 +111,8 @@ function Engine:createEntity(data)
     entityData.archive = data
     self.entities[entity] = entityData
     self:unmarshall(entity, data)
+
+    return entity
 end
 
 function Engine:removeEntity(entity)
@@ -126,7 +125,12 @@ function Engine:update(dt)
     self.messaging:flush()
     for _, system in pairs(self.systems) do
         if system.update ~= nil then
-            system:update(dt)
+            local systemData = self.systemData[system._name]
+            systemData.age = systemData.age - 1
+            if systemData.age <= 0 then
+                systemData.age = systemData.updateInterval
+                system:update(dt)
+            end
         end
     end
 end
