@@ -6,41 +6,58 @@ local ClientNetworking = require "systems/client-networking"
 local ServerNetworking = require "systems/server-networking"
 local Sound = require "systems/sound"
 local Input = require "systems/input"
+local Messaging = require "utils/messaging"
 
-local engine = Engine()
+local input = Input()
+local messaging = Messaging()
+local engine = Engine(messaging)
 local mapLoader = MapLoader(engine)
 
 function love.load(args)
-    local physics = Physics()
-    engine:addSystem("physics", physics)
 
     if args[2] == nil then
-        local clientNetworking = ClientNetworking("localhost")
+        local clientNetworking = ClientNetworking()
+        local physics = Physics()
         local graphics = Graphics()
         local sound = Sound()
 
-        sound:addSong('songs/aztek.mp3')
-        sound:addSong('songs/credit.mp3')
-        sound:addSong('songs/spastiche.mp3')
-        sound:play()
-
-        engine:addSystem("networking", clientNetworking)
+        engine:addSystem("input", input)
+        engine:addSystem("networking", clientNetworking, 1)
+        engine:addSystem("physics", physics)
         engine:addSystem("graphics", graphics)
         engine:addSystem("sound", sound)
+
+        --mapLoader:loadMap("level1")
+        --engine:setPlayer(1)
+
+        --clientNetworking:connect("65.100.3.69")
+
+        engine.messaging:register("connect", function(ip)
+            clientNetworking:connect(ip)
+        end)
     else
         local serverNetworking = ServerNetworking()
-        engine:addSystem("networking", serverNetworking)
+        local physics = Physics()
+        engine:addSystem("physics", physics)
+        engine:addSystem("networking", serverNetworking, 1)
         mapLoader:loadMap("level1")
     end
 end
 
-function love.keypressed(key, repeating)
-    if key == 'q' then
-        love.event.quit()
-    end
-    if key == 'a' then
-        engine.messaging:emit("next-song")
-    end
+function love.mousepressed(...)
+    input:mousepressed(...)
+end
+
+function love.mousereleased(...)
+    input:mousereleased(...)
+end
+
+function love.keypressed(...)
+    input:keypressed(...)
+end
+
+function love.keyreleased(...)
+    input:keyreleased(...)
 end
 
 function love.update(dt)
