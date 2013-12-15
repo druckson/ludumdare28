@@ -1,14 +1,15 @@
 local Class = require "../lib/hump/class"
 local vector = require "../lib/hump/vector"
 local PrettyPrint = require "../lib/lua-pretty-print/PrettyPrint"
+require "lib/json"
 
 local Physics = Class{
     init = function(self, worldScale)
         self.entities = {}
-        self.worldScale = worldScale or 10
+        self.worldScale = worldScale or 1
         self.world = love.physics.newWorld(0, 0, true)
         love.physics.setMeter(self.worldScale)
-        self.world:setGravity(0, 10)
+        --self.world:setGravity(0, 1)
     end
 }
 
@@ -18,12 +19,56 @@ function newShape(data)
     end
 end
 
+function Physics:setup(engine)
+    local this = self
+    self.engine = engine
+    self.engine.messaging:register("move", function(x, y, dt)
+        if this.player then
+            this.player.physics.body:applyForce(x, y)
+        end
+    end)
+    self.engine.messaging:register("player-motion", function(entity, x, y, dt)
+        this.entities[entity].physics.body:applyForce(x, y)
+    end)
+end
+
+function Physics:setPlayer(entity, player)
+    self.player = player
+end
+
 function Physics:marshall(entity, data)
     local entityData = self.entities[entity]
-    data.physics = {
-        velocity = {entityData.physics.body:getLinearVelocity()},
-        shapes = entityData.physics.shapes
-    }
+
+    if entityData then
+        if not data.physics then
+            data.physics = {}
+        end
+        data.physics.velocity = {entityData.physics.body:getLinearVelocity()}
+    end
+    --data.physics = {
+    --    shapes = entityData.physics.shapes
+    --}
+end
+
+function Physics:predict(entity, data, rtt)
+    local entityData = self.entities[entity]
+    if entityData then
+        local serverPosition = vector.new(data[1], data[2])
+        local serverRotation = data[3]
+        local serverVelocity = vector.new(data[4], data[5])
+        local serverAngularVelocity = data[6]
+        local predictedPosition = serverPosition + serverVelocity * rtt
+        local predictedAngle = serverRotation + serverAngularVelocity * rtt
+
+        local velocityDirection = predictedPosition - vector.new(entityData.physics.body:getPosition())
+        local angularVelocity = predictedAngle - entityData.physics.body:getAngle()
+
+        --entityData.physics.body:setLinearVelocity((velocityDirection:normalized() * serverVelocity:len()):unpack())
+        --entityData.physics.body:setAngularVelocity((velocityDirection:normalized() * serverVelocity:len()):unpack())
+
+        entityData.physics.body:setLinearVelocity(serverVelocity:unpack())
+        entityData.physics.body:setAngularVelocity(angularVelocity)
+    end
 end
 
 function Physics:unmarshall(entity, data)

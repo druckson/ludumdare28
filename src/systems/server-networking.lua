@@ -1,6 +1,7 @@
 require "enet"
 local Class = require "lib/hump/class"
 local mp = require "lib/messagepack"
+require "lib/json"
 
 local ServerNetworking = Class{
     init = function(self)
@@ -14,13 +15,6 @@ local ServerNetworking = Class{
 function ServerNetworking:setup(engine)
     local this = self
     self.engine = engine
-    self.engine.messaging:registerGlobal(function(messages)
-        
-    end)
-end
-
-function ServerNetworking:send()
-    
 end
 
 function ServerNetworking:addEntity(entity, entityData, data)
@@ -40,33 +34,68 @@ function ServerNetworking:update(dt)
         if (event == nil) then
             break
         else
-             if event.type == "connect" then
-                local clientID = self.nextClientID
-                self.nextClientID = self.nextClientID + 1
-                self.clients[clientID] = event.peer
-                self.engine:createEntity({
-                    
-                })
+            if event.type == "connect" then
+                print("Client Connected")
+                local clientID = event.peer:connect_id()
 
-                local data = {
+                local data1 = {
                     clientID = clientID,
-                    sync = {}
+                    init = {}
                 }
 
                 for entity, entityData in pairs(self.entities) do
-                    data.sync[entity] = self.engine:marshall(entity)
+                    data1.init[entity] = self.engine:marshall(entity)
                 end
 
-                print("Send")
-                --event.peer:send(mp.pack(data), 1, "reliable")
-                event.peer:send(mp.pack(data))
-             elseif event.type == "receive" then
+                local player = self.engine:createEntity({
+                    prefab = "player1",
+                    transform = {
+                        position = {math.random(-5, 5), math.random(-5, 5)},
+                        rotation = 0
+                    }
+                })
+
+                local data2 = {
+                    init = {}
+                }
+                data2.init[player] = self.engine:marshall(player)
+
+                self.clients[clientID] = {
+                    entity = player,
+                    player = self.engine.entities[player],
+                    peer = event.peer
+                }
+
+                data1.player = player
+
+                self.host:broadcast(mp.pack(data2), 0, "reliable")
+                event.peer:send(mp.pack(data1), 0, "reliable")
+            elseif event.type == "disconnect" then
+                
+            elseif event.type == "receive" then
                 local data = mp.unpack(event.data)
                 if data.messages then
                     --self.engine.messaging:addMessages(event.data.messages)
                     self.host:broadcast(mp.pack(data.messages))
                 end
-             end
+
+                if data.force then
+                    local clientID = event.peer:connect_id()
+                    local entity = self.clients[clientID].entity
+                    self.engine.messaging:emit("player-motion", entity, unpack(data.force))
+                end
+
+                if data.sync then
+                    local clientID = event.peer:connect_id()
+                    if self.clients[clientID] then
+                        --local body = self.clients[clientID].player.physics.body
+                        --body:setPosition(data.sync[1], data.sync[2])
+                        --body:setAngle(data.sync[3])
+                        --body:setLinearVelocity(data.sync[4], data.sync[5])
+                        --body:setAngularVelocity(data.sync[6])
+                    end
+                end
+            end
         end
     end
 
@@ -77,13 +106,20 @@ function ServerNetworking:update(dt)
 
     for entity, entityData in pairs(self.entities) do
         if entityData.networking.type == "dynamic" then
-            data.sync[entity] = self.engine:marshall(entity, 2, "unreliable")
+            local x, y = entityData.physics.body:getPosition()
+            local vx, vy = entityData.physics.body:getLinearVelocity()
+            data.sync[entity] = {
+                x,
+                y,
+                entityData.physics.body:getAngle(),
+                vx,
+                vy,
+                entityData.physics.body:getAngularVelocity()
+            }
         end
     end
 
-    local mpData = mp.pack(data)
-
-    self.host:broadcast(mpData)
+    self.host:broadcast(mp.pack(data), 0, "unreliable")
 end
 
 return ServerNetworking
