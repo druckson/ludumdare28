@@ -36,20 +36,6 @@ function Physics:setPlayer(entity, player)
     self.player = player
 end
 
-function Physics:marshall(entity, data)
-    local entityData = self.entities[entity]
-
-    if entityData then
-        if not data.physics then
-            data.physics = {}
-        end
-        data.physics.velocity = {entityData.physics.body:getLinearVelocity()}
-    end
-    --data.physics = {
-    --    shapes = entityData.physics.shapes
-    --}
-end
-
 function Physics:predict(entity, data, rtt)
     local entityData = self.entities[entity]
     if entityData then
@@ -71,14 +57,36 @@ function Physics:predict(entity, data, rtt)
     end
 end
 
+function Physics:marshall(entity, data)
+    local entityData = self.entities[entity]
+
+    if entityData then
+        if not data.physics then
+            data.physics = {}
+        end
+        data.physics.velocity = {entityData.physics.body:getLinearVelocity()}
+    end
+    --data.physics = {
+    --    shapes = entityData.physics.shapes
+    --}
+end
+
 function Physics:unmarshall(entity, data)
     local entityData = self.entities[entity]
 
     if not entityData.physics then
         entityData.physics = {}
-        entityData.physics.body = love.physics.newBody(self.world,
+        local body = love.physics.newBody(self.world,
             entityData.transform.position.x,
             entityData.transform.position.y, data.type)
+
+        entityData.physics.body = body
+
+        if data.velocity then
+            body:setLinearVelocity(unpack(data.velocity))
+        end
+
+        body:setLinearDamping(0.9)
 
         if data.shapes then
             for _, shape in pairs(data.shapes) do

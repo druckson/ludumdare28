@@ -30,6 +30,10 @@ function ClientNetworking:setup(engine)
                              vector.new(x, y) * dt) / (this.forceTime + dt)
         this.forceTime = this.forceTime + dt
     end)
+    self.engine.messaging:register('shoot', function()
+        print("Shooting")
+        --this.player
+    end)
 end
 
 function ClientNetworking:addEntity(entity, entityData, data)
@@ -43,73 +47,89 @@ function ClientNetworking:removeEntity(entity)
     
 end
 
+function ClientNetworking:tearDown()
+    print("Disconnect")
+    if self.server then
+        self.server:disconnect_now()
+    end
+end
+
 function ClientNetworking:update(dt)
-    while true do
-        local event = self.host:service(0)
-        if event == nil then
-            break
-        else
-            if event.type == "connect" then
-                print("Connected!")
-                self.connected = true
-            elseif event.type == "receive" then
-                local data = mp.unpack(event.data)
+    if self.server then
+        while true do
+            local event = self.host:service(0)
+            if event == nil then
+                break
+            else
+                if event.type == "connect" then
+                    print("Connected!")
+                    self.connected = true
+                elseif event.type == "receive" then
+                    local data = mp.unpack(event.data)
 
-                if data.init then
-                    for entity, data in pairs(data.init) do
-                        self.engine:unmarshall(entity, data)
+                    if data.init then
+                        for entity, data in pairs(data.init) do
+                            self.engine:unmarshall(entity, data)
+                        end
                     end
-                end
 
-                if data.sync then
-                    for entity, data in pairs(data.sync) do
-                        self.engine.systemsByName.physics:predict(entity, data, self.server:round_trip_time()/1000)
-                        --local body = self.engine.entities[entity].physics.body
-                        --body:setPosition(data[1], data[2])
-                        --body:setAngle(data[3])
-                        --body:setLinearVelocity(data[4], data[5])
-                        --body:setAngularVelocity(data[6])
+                    if data.sync then
+                        for entity, data in pairs(data.sync) do
+                            self.engine.systemsByName.physics:predict(entity, data, self.server:round_trip_time()/1000)
+                            --local body = self.engine.entities[entity].physics.body
+                            --body:setPosition(data[1], data[2])
+                            --body:setAngle(data[3])
+                            --body:setLinearVelocity(data[4], data[5])
+                            --body:setAngularVelocity(data[6])
+                        end
                     end
-                end
 
-                if data.clientID then
-                    self.clientID = data.clientID
-                end
+                    if data.delete then
+                        print("Delete entity")
+                        for _, entity in pairs(data.delete) do
+                            self.engine:deleteEntity(entity)
+                        end
+                    end
 
-                if data.player then
-                    self.engine:setPlayer(data.player)
-                end
+                    if data.clientID then
+                        self.clientID = data.clientID
+                    end
 
-                if data.messages then
-                    self.engine.messaging:addMessages(data.messages)
+                    if data.player then
+                        self.engine:setPlayer(data.player)
+                    end
+
+                    if data.messages then
+                        self.engine.messaging:addMessages(data.messages)
+                    end
                 end
             end
         end
-    end
 
-    if self.connected and self.player then
-        local x, y = self.player.physics.body:getPosition()
-        local vx, vy = self.player.physics.body:getLinearVelocity()
-        local data = {
-            force = {
-                self.forceAverage.x,
-                self.forceAverage.y,
-                self.forceTime 
-            },
-            sync = {
-                x,
-                y,
-                self.player.physics.body:getAngle(),
-                vx,
-                vy,
-                self.player.physics.body:getAngularVelocity(),
+        if self.connected and self.player then
+            local x, y = self.player.physics.body:getPosition()
+            local vx, vy = self.player.physics.body:getLinearVelocity()
+            local data = {
+                force = {
+                    self.forceAverage.x,
+                    self.forceAverage.y,
+                    self.forceTime 
+                },
+                sync = {
+                    x,
+                    y,
+                    self.player.physics.body:getAngle(),
+                    vx,
+                    vy,
+                    self.player.physics.body:getAngularVelocity(),
+                }
             }
-        }
 
-        self.forceAverage = vector.new(0, 0)
-        self.forceTime = 0
+            self.forceAverage = vector.new(0, 0)
+            self.forceTime = 0
 
-        self.server:send(mp.pack(data), 0, "unreliable")
+            self.server:send(mp.pack(data), 0, "unreliable")
+        end
     end
 end
 
