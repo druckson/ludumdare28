@@ -8,7 +8,7 @@ local Sound = require "systems/sound"
 local Input = require "systems/input"
 local Messaging = require "utils/messaging"
 
-local input = Input()
+local input
 local messaging = Messaging()
 local engine = Engine(messaging)
 local mapLoader = MapLoader(engine)
@@ -16,6 +16,7 @@ local mapLoader = MapLoader(engine)
 function love.load(args)
 
     if args[2] == nil then
+        local input = Input()
         local clientNetworking = ClientNetworking()
         local physics = Physics()
         local graphics = Graphics()
@@ -32,6 +33,30 @@ function love.load(args)
 
         --clientNetworking:connect("65.100.3.69")
 
+        function love.mousepressed(...)
+            if input then
+                input:mousepressed(...)
+            end
+        end
+        
+        function love.mousereleased(...)
+            if input then
+                input:mousereleased(...)
+            end
+        end
+        
+        function love.keypressed(...)
+            if input then
+                input:keypressed(...)
+            end
+        end
+        
+        function love.keyreleased(...)
+            if input then
+                input:keyreleased(...)
+            end
+        end
+
         engine.messaging:register("connect", function(ip)
             clientNetworking:connect(ip)
         end)
@@ -42,22 +67,6 @@ function love.load(args)
         engine:addSystem("networking", serverNetworking, 1)
         mapLoader:loadMap("level1")
     end
-end
-
-function love.mousepressed(...)
-    input:mousepressed(...)
-end
-
-function love.mousereleased(...)
-    input:mousereleased(...)
-end
-
-function love.keypressed(...)
-    input:keypressed(...)
-end
-
-function love.keyreleased(...)
-    input:keyreleased(...)
 end
 
 function love.update(dt)
