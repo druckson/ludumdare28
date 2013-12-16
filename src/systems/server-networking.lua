@@ -9,6 +9,7 @@ local ServerNetworking = Class{
         self.nextClientID = 1
         self.clients = {}
         self.entities = {}
+        self.deleted = {}
     end
 }
 
@@ -25,7 +26,7 @@ function ServerNetworking:addEntity(entity, entityData, data)
 end
 
 function ServerNetworking:removeEntity(entity)
-    
+    table.insert(self.deleted, entity)
 end
 
 function ServerNetworking:update(dt)
@@ -71,7 +72,12 @@ function ServerNetworking:update(dt)
                 self.host:broadcast(mp.pack(data2), 0, "reliable")
                 event.peer:send(mp.pack(data1), 0, "reliable")
             elseif event.type == "disconnect" then
-                
+                print("Client Disconnected")
+                local clientID = event.peer:connect_id()
+                print(self.clients[clientID])
+                if self.clients[clientID] then
+                    self.engine:deleteEntity(self.clients[clientID].entity)
+                end
             elseif event.type == "receive" then
                 local data = mp.unpack(event.data)
                 if data.messages then
@@ -120,6 +126,15 @@ function ServerNetworking:update(dt)
     end
 
     self.host:broadcast(mp.pack(data), 0, "unreliable")
+
+    if #self.deleted > 0 then
+        print("Deleting entities") 
+        data = {
+            delete = self.deleted
+        }
+        self.deleted = {}
+        self.host:broadcast(mp.pack(data), 0, "reliable")
+    end
 end
 
 return ServerNetworking
