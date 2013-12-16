@@ -18,10 +18,13 @@ local Engine = Class{
 
 function Engine:prefab(data)
     local out = {}
-    if data.prefab and self.prefabs[data.prefab] then
-        local prefab = data.prefab
-        data.prefab = nil
-        out = self:prefab(self.prefabs[prefab])
+    if data.prefab then
+            if self.prefabs[data.prefab] then
+            local prefab = data.prefab
+            out = self:prefab(self.prefabs[prefab])
+        else
+            print("Missing prefab: "..data.prefab)
+        end
     end
 
     return merge(out, data)
@@ -94,9 +97,11 @@ function Engine:unmarshall(entity, data)
     end
 
     for name, systemData in pairs(data) do
-        local system = self.systemsByName[name]
-        if system ~= nil and system.addEntity ~= nil then
-            system:addEntity(entity, entityData, systemData)
+        if name ~= "prefab" then
+            local system = self.systemsByName[name]
+            if system ~= nil and system.addEntity ~= nil then
+                system:addEntity(entity, entityData, systemData)
+            end
         end
     end
 end
@@ -115,9 +120,11 @@ function Engine:createEntity(data)
     return entity
 end
 
-function Engine:removeEntity(entity)
-    for name, system in pairs(self.systems) do
-        system:removeEntity(entity)
+function Engine:deleteEntity(entity)
+    for _, system in pairs(self.systems) do
+        if system.removeEntity then
+            system:removeEntity(entity)
+        end
     end
 end
 
@@ -131,6 +138,14 @@ function Engine:update(dt)
                 systemData.age = systemData.updateInterval
                 system:update(dt)
             end
+        end
+    end
+end
+
+function Engine:tearDown()
+    for _, system in pairs(self.systems) do
+        if system.tearDown ~= nil then
+            system:tearDown()
         end
     end
 end
