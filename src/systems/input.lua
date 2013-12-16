@@ -24,6 +24,7 @@ end
 
 function Input:keypressed(key, repeating)
     if self.state == STATE_TYPING then
+        love.keyboard.setKeyRepeat(true)
         if key == 'return' then
 
             if string.sub(self.typeBuffer, 0, 7) == "connect" then
@@ -41,7 +42,9 @@ function Input:keypressed(key, repeating)
         end
         self.engine.messaging:emit("type-buffer", self.typeBuffer)
     elseif self.state == STATE_GAMEPLAY then
+        love.keyboard.setKeyRepeat(false)
         if key == 'q' then
+            self.engine:tearDown()
             love.event.quit()
         elseif key == 'n' then
             self.engine.messaging:emit("next-song")
@@ -65,9 +68,10 @@ function Input:mousereleased(...)
 end
 
 function Input:update(dt)
-    if self.player then
+    if self.player and self.state == STATE_GAMEPLAY then
         local mx = 0
         local my = 0
+
         if love.keyboard.isDown('w') then
             my = my - self.speed
         end
@@ -82,6 +86,20 @@ function Input:update(dt)
         end
     
         self.engine.messaging:emit("move", mx, my, dt)
+
+        if love.keyboard.isDown(' ') then
+            self.engine.messaging:emit("shoot")
+            --self.engine:createEntity({
+            --    prefab = "bullet",
+            --    transform = {
+            --        position = {self.player.transform.position:unpack()},
+            --        rotation = self.player.transform.rotation
+            --    },
+            --    physics = {
+            --        velocity = {10, 0}
+            --    }
+            --})
+        end
     end
 end
 
