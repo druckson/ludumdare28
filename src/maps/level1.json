@@ -1,4 +1,11 @@
 {
+    "players": [
+        "player1",
+        "player1-shotgun",
+        "player2",
+        "player2-shotgun",
+        "player3"
+    ],
     "audio": {
         "songs": [
             "songs/credit.mp3"
@@ -6,11 +13,32 @@
         "effects": {}
     },
     "prefabs": {
-        "player1": {
+        "bullet": {
             "graphics": {
+                "type": "rect",
+                "width": 0.1,
+                "height": 0.1
+            },
+            "networking": {
+                "type": "dynamic"
+            },
+            "physics": {
+                "type": "dynamic",
+                "density": 1
+                "shapes": [
+                    {
+                        "type": "rect",
+                        "width": 0.1,
+                        "height": 0.1
+                    }
+                ]
+            }
+        },
+        "player": {
+            "graphics": {
+                "type": "image",
                 "width": 1,
-                "height": 1,
-                "image": "player1.png"
+                "height": 1
             },
             "networking": {
                 "type": "dynamic"
@@ -27,25 +55,34 @@
                 ]
             }
         },
-        "player2": {
+        "player1": {
+            "prefab": "player",
             "graphics": {
-                "width": 1,
-                "height": 1,
-                "image": "test.png"
-            },
-            "networking": {
-                "type": "dynamic"
-            },
-            "physics": {
-                "type": "dynamic",
-                "density": 1
-                "shapes": [
-                    {
-                        "type": "rect",
-                        "width": 1,
-                        "height": 1 
-                    }
-                ]
+                "image": "player1.png"
+            }
+        },
+        "player2": {
+            "prefab": "player",
+            "graphics": {
+                "image": "player2.png"
+            }
+        },
+        "player1-shotgun": {
+            "prefab": "player",
+            "graphics": {
+                "image": "player1-shotgun.png"
+            }
+        },
+        "player2-shotgun": {
+            "prefab": "player",
+            "graphics": {
+                "image": "player2-shotgun.png"
+            }
+        },
+        "player3": {
+            "prefab": "player",
+            "graphics": {
+                "image": "player3.png"
             }
         }
     },
@@ -58,31 +95,17 @@
             }
         },
         {
-            "prefab": "player2",
+            "prefab": "player2-shotgun",
             "transform": {
                 "position": [5, 0],
                 "rotation": 0
             }
         },
         {
-            "prefab": "player1",
+            "prefab": "player3",
             "transform": {
-                "position": [0, 5],
+                "position": [5, 5],
                 "rotation": 0
-            },
-            "networking": {
-                "type": "static"
-            },
-            "physics": {
-                "type": "static",
-                "density": 0,
-                "shapes": [
-                    {
-                        "type": "rect",
-                        "width": 1000,
-                        "height": 0.1
-                    }
-                ]
             }
         }
     ]
