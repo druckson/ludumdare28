@@ -26,7 +26,7 @@ function love.load(args)
         engine:addSystem("networking", clientNetworking, 1)
         engine:addSystem("physics", physics)
         engine:addSystem("graphics", graphics)
-        engine:addSystem("sound", sound)
+        --engine:addSystem("sound", sound)
 
         --mapLoader:loadMap("level1")
         --engine:setPlayer(1)

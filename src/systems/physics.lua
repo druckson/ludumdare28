@@ -9,7 +9,7 @@ local Physics = Class{
         self.worldScale = worldScale or 1
         self.world = love.physics.newWorld(0, 0, true)
         love.physics.setMeter(self.worldScale)
-        --self.world:setGravity(0, 1)
+        self.world:setGravity(0, -10)
     end
 }
 
@@ -23,12 +23,18 @@ function Physics:setup(engine)
     local this = self
     self.engine = engine
     self.engine.messaging:register("move", function(x, y, dt)
-        if this.player then
-            this.player.physics.body:applyForce(x, y)
+        if self.player then
+            if x ~= 0 then
+                self.player.graphics.flip = (x > 0)
+            end
+            self.player.physics.body:applyForce(x*3, y*3)
         end
     end)
+    self.engine.messaging:register("jump", function(player)
+        self.entities[player].physics.body:applyLinearImpulse(0, 1.7)
+    end)
     self.engine.messaging:register("player-motion", function(entity, x, y, dt)
-        this.entities[entity].physics.body:applyForce(x, y)
+        this.entities[entity].physics.body:applyForce(x*3, y*3)
     end)
 end
 
@@ -86,7 +92,12 @@ function Physics:unmarshall(entity, data)
             body:setLinearVelocity(unpack(data.velocity))
         end
 
-        body:setLinearDamping(0.9)
+        body:setLinearDamping(0.8)
+        body:setAngularDamping(0.8)
+
+        if data.fixedRotation then
+            body:setFixedRotation(true)
+        end
 
         if data.shapes then
             for _, shape in pairs(data.shapes) do

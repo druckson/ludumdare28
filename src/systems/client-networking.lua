@@ -11,6 +11,8 @@ local ClientNetworking = Class{
         self.entities = {}
         self.forceAverage = vector.new(0, 0)
         self.forceTime = 0
+        self.jump = nil
+        self.shoot = {}
     end
 }
 
@@ -30,9 +32,12 @@ function ClientNetworking:setup(engine)
                              vector.new(x, y) * dt) / (this.forceTime + dt)
         this.forceTime = this.forceTime + dt
     end)
-    self.engine.messaging:register('shoot', function()
+    self.engine.messaging:register('jump', function()
+        self.jump = true
+    end)
+    self.engine.messaging:register('shoot', function(entity, direction)
         print("Shooting")
-        --this.player
+        table.insert(this.shoot, {entity, direction})
     end)
 end
 
@@ -64,6 +69,8 @@ function ClientNetworking:update(dt)
                 if event.type == "connect" then
                     print("Connected!")
                     self.connected = true
+                elseif event.type == "disconnect" then
+                    --self.engineV
                 elseif event.type == "receive" then
                     local data = mp.unpack(event.data)
 
@@ -76,11 +83,6 @@ function ClientNetworking:update(dt)
                     if data.sync then
                         for entity, data in pairs(data.sync) do
                             self.engine.systemsByName.physics:predict(entity, data, self.server:round_trip_time()/1000)
-                            --local body = self.engine.entities[entity].physics.body
-                            --body:setPosition(data[1], data[2])
-                            --body:setAngle(data[3])
-                            --body:setLinearVelocity(data[4], data[5])
-                            --body:setAngularVelocity(data[6])
                         end
                     end
 
@@ -88,6 +90,12 @@ function ClientNetworking:update(dt)
                         print("Delete entity")
                         for _, entity in pairs(data.delete) do
                             self.engine:deleteEntity(entity)
+                        end
+                    end
+
+                    if data.shoot then
+                        for _, s in pairs(data.shoot) do
+                            self.engine.messaging:emit("shoot", s)
                         end
                     end
 
@@ -110,6 +118,8 @@ function ClientNetworking:update(dt)
             local x, y = self.player.physics.body:getPosition()
             local vx, vy = self.player.physics.body:getLinearVelocity()
             local data = {
+                jump = self.jump,
+                shoot = self.shoot,
                 force = {
                     self.forceAverage.x,
                     self.forceAverage.y,
@@ -125,6 +135,8 @@ function ClientNetworking:update(dt)
                 }
             }
 
+            self.jump = nil
+            self.shoot = nil
             self.forceAverage = vector.new(0, 0)
             self.forceTime = 0
 

@@ -16,6 +16,10 @@ function MapLoader:loadMap(file)
         self.engine:addPrefabs(map.prefabs)
     end
 
+    if map.players then
+        self.engine:addPlayers(map.players)
+    end
+
     if map.entities then
         for _, data in pairs(map.entities) do
             self.engine:createEntity(data)

@@ -48,10 +48,9 @@ function ServerNetworking:update(dt)
                     data1.init[entity] = self.engine:marshall(entity)
                 end
 
-                local player = self.engine:createEntity({
-                    prefab = "player1",
+                local player = self.engine:createPlayer({
                     transform = {
-                        position = {math.random(-5, 5), math.random(-5, 5)},
+                        position = {0, 0},
                         rotation = 0
                     }
                 })
@@ -83,6 +82,12 @@ function ServerNetworking:update(dt)
                 if data.messages then
                     --self.engine.messaging:addMessages(event.data.messages)
                     self.host:broadcast(mp.pack(data.messages))
+                end
+
+                if data.jump then
+                    local clientID = event.peer:connect_id()
+                    local entity = self.clients[clientID].entity
+                    self.engine.messaging:emit("jump", entity)
                 end
 
                 if data.force then

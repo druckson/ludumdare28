@@ -8,7 +8,6 @@ local STATE_TYPING = 2
 local Input = Class{
     init = function(self)
         self.currentSong = 3
-        self.speed = 20
         self.state = STATE_TYPING
         self.typeBuffer = ''
     end
@@ -19,6 +18,7 @@ function Input:setup(engine)
 end
 
 function Input:setPlayer(entity, player)
+    self.playerEntity = entity
     self.player = player
 end
 
@@ -50,6 +50,16 @@ function Input:keypressed(key, repeating)
             self.engine.messaging:emit("next-song")
         elseif key == 'return' then
             
+        elseif key == 'f' then
+            self.engine.messaging:emit("fullscreen")
+        elseif key == 'w' then
+            if self.playerEntity then
+                self.engine.messaging:emit("jump", self.playerEntity)
+            end
+        elseif key == ' ' then
+            if self.playerEntity then
+                self.engine.messaging:emit("shoot", self.playerEntity, 1)
+            end
         end
     end
     loveframes.keypressed(key, repeating)
@@ -72,34 +82,14 @@ function Input:update(dt)
         local mx = 0
         local my = 0
 
-        if love.keyboard.isDown('w') then
-            my = my - self.speed
-        end
-        if love.keyboard.isDown('s') then
-            my = my + self.speed
-        end
         if love.keyboard.isDown('a') then
-            mx = mx - self.speed
+            mx = mx + 1
         end
         if love.keyboard.isDown('d') then
-            mx = mx + self.speed
+            mx = mx - 1
         end
     
         self.engine.messaging:emit("move", mx, my, dt)
-
-        if love.keyboard.isDown(' ') then
-            self.engine.messaging:emit("shoot")
-            --self.engine:createEntity({
-            --    prefab = "bullet",
-            --    transform = {
-            --        position = {self.player.transform.position:unpack()},
-            --        rotation = self.player.transform.rotation
-            --    },
-            --    physics = {
-            --        velocity = {10, 0}
-            --    }
-            --})
-        end
     end
 end
 

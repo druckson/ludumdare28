@@ -2,8 +2,6 @@
     "players": [
         "player1",
         "player1-shotgun",
-        "player2",
-        "player2-shotgun",
         "player3"
     ],
     "audio": {
@@ -13,6 +11,26 @@
         "effects": {}
     },
     "prefabs": {
+        "block": {
+            "transform": {
+                "rotation": 0
+            },
+            "graphics": {
+                "type": "rect"
+            },
+            "networking": {
+                "type": "static"
+            },
+            "physics": {
+                "type": "static",
+                "density": 0,
+                "shapes": [
+                    {
+                        "type": "rect"
+                    }
+                ]
+            }
+        },
         "bullet": {
             "graphics": {
                 "type": "rect",
@@ -43,9 +61,13 @@
             "networking": {
                 "type": "dynamic"
             },
+            "damage": {
+                "max_health": 100
+            },
             "physics": {
                 "type": "dynamic",
-                "density": 1
+                "fixedRotation": true,
+                "density": 1,
                 "shapes": [
                     {
                         "type": "rect",
@@ -59,53 +81,115 @@
             "prefab": "player",
             "graphics": {
                 "image": "player1.png"
-            }
-        },
-        "player2": {
-            "prefab": "player",
-            "graphics": {
-                "image": "player2.png"
+            },
+            "physics": {
+                "shapes": [
+                    {
+                        "width": 0.3
+                    }
+                ]
             }
         },
         "player1-shotgun": {
             "prefab": "player",
             "graphics": {
                 "image": "player1-shotgun.png"
+            },
+            "physics": {
+                "shapes": [
+                    {
+                        "width": 0.3
+                    }
+                ]
+            }
+        },
+        "player2": {
+            "prefab": "player",
+            "graphics": {
+                "image": "player2.png"
+            },
+            "physics": {
+                "shapes": [
+                    {
+                        "width": 0.8
+                        "height": 0.5
+                    }
+                ]
             }
         },
         "player2-shotgun": {
             "prefab": "player",
             "graphics": {
                 "image": "player2-shotgun.png"
+            },
+            "physics": {
+                "shapes": [
+                    {
+                        "width": 0.8
+                        "height": 0.5
+                    }
+                ]
             }
         },
         "player3": {
             "prefab": "player",
             "graphics": {
                 "image": "player3.png"
+            },
+            "physics": {
+                "shapes": [
+                    {
+                        "width": 0.3
+                    }
+                ]
+            }
+        },
+        "tree": {
+            "transform": {
+                "rotation": 0
+            },
+            "networking": {
+                "type": "static"
+            },
+            "graphics": {
+                "type": "image",
+                "width": 6,
+                "height": 6
+            }
+        },
+        "tree1": {
+            "prefab": "tree",
+            "graphics": {
+                "image": "tree1.png"
+            }
+        },
+        "tree2": {
+            "prefab": "tree",
+            "graphics": {
+                "image": "tree2.png"
             }
         }
     },
     "entities": [
         {
-            "prefab": "player1",
+            "prefab": "block",
             "transform": {
-                "position": [0, 0],
+                "position": [0, -10],
                 "rotation": 0
-            }
-        },
-        {
-            "prefab": "player2-shotgun",
-            "transform": {
-                "position": [5, 0],
-                "rotation": 0
-            }
-        },
-        {
-            "prefab": "player3",
-            "transform": {
-                "position": [5, 5],
-                "rotation": 0
+            },
+            "graphics": {
+                "type": "rect",
+                "color": [14, 7, 0]
+                "width": 10000,
+                "height": 20
+            },
+            "physics": {
+                "shapes": [
+                    {
+                        "width": 10000,
+                        "height": 20
+                    }
+                ]
             }
         }
     ]

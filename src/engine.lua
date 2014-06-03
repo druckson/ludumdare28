@@ -13,8 +13,15 @@ local Engine = Class{
         self.nextEntity = 1
         self.messaging = messaging
         self.prefabs = {}
+        self.playerPrefabs = {}
     end
 }
+
+function Engine:addPlayers(players)
+    for _, player in pairs(players) do
+        table.insert(self.playerPrefabs, player)
+    end
+end
 
 function Engine:prefab(data)
     local out = {}
@@ -28,6 +35,13 @@ function Engine:prefab(data)
     end
 
     return merge(out, data)
+end
+
+function Engine:createPlayer(data)
+    print(#self.playerPrefabs)
+    local player = math.random(1, #self.playerPrefabs)
+    data.prefab = self.playerPrefabs[player]
+    return self:createEntity(data)
 end
 
 function Engine:addPrefabs(prefabs)
